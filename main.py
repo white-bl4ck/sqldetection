@@ -1,7 +1,3 @@
-from email import header
-from operator import itemgetter
-from re import I
-from urllib import response
 from urllib.parse import urlparse
 import requests as req
 from random_user_agent.user_agent import UserAgent
@@ -24,20 +20,39 @@ def detection_def():
 #vars
 detection = detection_def()
 query_sqli = {}
+status_detecting = []
+error_403_500 = 0
+response_list = []
+success = 0
 
 # url=input('Enter url')
-ur = urlparse('http://localhost:8080/adsdsa?dasdadas=22&das=12')
-url = ur.scheme+ '://'+ur.netloc+ur.path
+ur = urlparse('http://localhost/adsdsa?dasdadas=22&das=12')
+url = ur.scheme+ '://'+ur.hostname+ur.path
 user_agent=user_agent_def()
 query = dict(x.split("=") for x in ur.query.split('&'))
 for key,item in query.items():
     for iii in detection:
         query_sqli[key]=str(item)+iii
         response = req.get(url,params = query_sqli,headers = user_agent)
-        
-        # print(url+)
+        status_detecting.append("query: " + key + "=" + str(item)+iii + " || " + "status: " + str(response.status_code))
+        response_list.append(response.text)
 
-    
+for i in status_detecting:
+    if '403' in i or '500' in i:
+        error_403_500 += 1
+    elif '200' in i:
+        success += 1
+
+print("errors: " + str(error_403_500) + " And success: " +str(success)+" times")
+
+for i in response_list:
+    if "sql" in i:
+        print("vulnerable")
+
+
+# print(url+)
+
+
 # response = req.get(url,params = query,headers = user_agent)
 
-print(response.status_code)
+# print(response.status_code)
